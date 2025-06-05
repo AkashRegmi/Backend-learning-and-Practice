@@ -101,6 +101,40 @@ app.get("/books",  async (req, res) => {
   });
 });
 
+//get book by id 
+app.get("/books/:id",async(req,res)=>{
+  console.log(req.params);
+  const{ id }=req.params;
+  if(!id){
+    return res.status(400).json({
+      status:"fail",
+      message:"id is required"
+    })
+  }
+  try {
+    const specificBook = await Books.findById(id);
+    if (!specificBook) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Book not found",
+      });
+    }
+    res.status(200).json({
+      status: "success",
+      message: "Book retrieved successfully",
+      data: specificBook,
+    });
+    
+  } catch (error) {
+    console.error("Error retrieving book:", error.message);
+    res.status(500).json({
+      status: "error",
+      message: error.message || "Internal Server Error",
+    });
+    
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
