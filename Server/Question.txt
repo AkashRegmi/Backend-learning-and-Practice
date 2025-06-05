@@ -1,0 +1,106 @@
+ Foundational Practice Questions
+Basic Routing
+
+Create a basic Express server with two routes: / (GET) and /about (GET).
+
+Task: Return different messages from each route.
+
+Middleware
+
+What is middleware in Express? Write a custom logger middleware that logs request method and URL.
+
+Request Body Parsing
+
+How do you parse JSON data in Express? Create a POST /user endpoint that accepts a user object and logs it.
+
+Environment Variables
+
+How do you use .env in Express? Set and use a PORT variable using dotenv.
+
+🗃️ API Design Tasks
+CRUD API
+
+Design a simple Book API with endpoints:
+
+GET /books → List all books
+
+GET /books/:id → Get a book
+
+POST /books → Create a book
+
+PUT /books/:id → Update a book
+
+DELETE /books/:id → Delete a book
+
+Validation
+
+Add validation to the above API using express-validator or Joi.
+
+Validate that title is required and year is a number.
+
+🛡️ Authentication & Authorization
+Login System
+
+Create a login system using Express.
+
+Add a dummy user and validate credentials.
+
+Return a JWT token on successful login.
+
+Protected Routes
+
+Create a protected route that only works if the JWT is valid.
+
+Role-based Access
+
+Add role checking (admin/user) to allow only certain users to access specific endpoints.
+
+🧱 Project Architecture & Patterns
+Controller Pattern
+
+Refactor your routes to use separate controller files.
+
+Error Handling
+
+Implement global error-handling middleware.
+
+Create a custom error class for sending standardized error responses.
+
+Async/Await Handling
+
+How do you catch async errors in Express without using try/catch everywhere?
+
+🗂️ File Handling & Upload
+File Upload
+
+Implement file upload (e.g., profile picture) using multer.
+
+🛢️ Database Integration (MongoDB/Mongoose)
+Basic MongoDB Integration
+
+Connect to MongoDB using Mongoose and create a User model.
+
+Schema Design
+
+Design a Product schema with fields like name, price, category, and inStock.
+
+Population
+
+Create a User and Post model and demonstrate how to populate posts with user details.
+
+🚀 Advanced Concepts
+Pagination and Filtering
+
+Implement pagination and filtering on the GET /books endpoint.
+
+Rate Limiting
+
+Add basic rate limiting using express-rate-limit.
+
+CORS
+
+Enable CORS only for a specific frontend domain.
+
+Unit Testing
+
+Write unit tests for one of your routes using Jest or Mocha.
