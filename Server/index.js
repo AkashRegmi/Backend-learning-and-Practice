@@ -81,22 +81,23 @@ app.post("/books", async(req, res) => {
     console.error("Error adding book:", error);
     res.status(500).json({
       status: "error",
-      message: "Failed to add book",
+      message: error.message || "Internal Server Error",
     });
   }
 });
 
-app.get("/books", (req, res) => {
-  if (storedBooks.length === 0) {
+app.get("/books",  async (req, res) => {
+ const StoredBooks = await Books.find({});
+ if(!StoredBooks || StoredBooks.length === 0) {
     return res.status(404).json({
       status: "fail",
-      message: "No books found",
+      message: "No books found in the database",
     });
   }
   res.status(200).json({
     status: "success",
     message: "Books retrieved successfully",
-    data: storedBooks,
+    data: StoredBooks,
   });
 });
 
