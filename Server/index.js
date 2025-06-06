@@ -135,6 +135,37 @@ app.get("/books/:id",async(req,res)=>{
   }
 })
 
+// Delete the book by id 
+app.delete("/books/delete/:id", async(req,res)=>{
+  const {id } = req.params;
+  if(!id){
+    return res.status(400).json({
+      status: "fail",
+      message: "id is required to delete the book",
+    });
+    };
+    try {
+      const newBooks = await Books.findByIdAndDelete(id);
+    
+      if (newBooks.length === 0) {
+        return res.status(404).json({
+          status: "fail",
+          message: "No books found with the provided id",
+        });
+      }
+      res.status(200).json({
+        status:"success",
+        message :`Book with id ${id} deleted successfully`,
+        data:newBooks
+      })
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        message: error.message || "Internal Server Error",
+      });
+    }
+  })
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
