@@ -166,6 +166,44 @@ app.delete("/books/delete/:id", async(req,res)=>{
     }
   })
 
+// Update the book by id
+app.put("/books/update/:id",(async(req,res)=>{
+  const {id} = req.params;
+  const { title, author, price } = req.body;
+  if (!id || !title || !author || !price) {
+    return res.status(400).json({
+      status: "fail",
+      message: "id, title, author and price are required",
+    });
+  }
+  try {
+    const updatedBook = await Books.findByIdAndUpdate(
+      id,
+      { title, author, price },
+      { new: true }
+    );
+
+    if (!updatedBook) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Book not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: `Book with id ${id} updated successfully`,
+      data: updatedBook,
+    });
+  } catch (error) {
+    console.error("Error updating book:", error.message);
+    res.status(500).json({
+      status: "error",
+      message: error.message || "Internal Server Error",
+    });
+  }
+}))
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
