@@ -3,9 +3,11 @@ const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const Loggerr = require("./middleWare/custome");
 const Books = require("./models/Books");
+const User = require("./models/User");
 const PORT = process.env.PORT || 1000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -51,7 +53,7 @@ connectDB();
 //   })
 // })
 
-app.post("/books", async(req, res) => {
+app.post("/books", async (req, res) => {
   const { title, author, price } = req.body;
   if (!title || !author || !price) {
     return res.status(400).json({
@@ -61,13 +63,12 @@ app.post("/books", async(req, res) => {
   }
 
   try {
-    
-      const books = await Books.create({
-        title,
-        author,
-        price,
-      });
-    
+    const books = await Books.create({
+      title,
+      author,
+      price,
+    });
+
     res.status(200).json({
       status: "success",
       message: "Book Saved successfully in Database",
@@ -86,9 +87,9 @@ app.post("/books", async(req, res) => {
   }
 });
 
-app.get("/books",  async (req, res) => {
- const StoredBooks = await Books.find({});
- if(!StoredBooks || StoredBooks.length === 0) {
+app.get("/books", async (req, res) => {
+  const StoredBooks = await Books.find({});
+  if (!StoredBooks || StoredBooks.length === 0) {
     return res.status(404).json({
       status: "fail",
       message: "No books found in the database",
@@ -101,15 +102,15 @@ app.get("/books",  async (req, res) => {
   });
 });
 
-//get book by id 
-app.get("/books/:id",async(req,res)=>{
+//get book by id
+app.get("/books/:id", async (req, res) => {
   console.log(req.params);
-  const{ id }=req.params;
-  if(!id){
+  const { id } = req.params;
+  if (!id) {
     return res.status(400).json({
-      status:"fail",
-      message:"id is required"
-    })
+      status: "fail",
+      message: "id is required",
+    });
   }
   try {
     const specificBook = await Books.findById(id);
@@ -124,51 +125,49 @@ app.get("/books/:id",async(req,res)=>{
       message: "Book retrieved successfully",
       data: specificBook,
     });
-    
   } catch (error) {
     console.error("Error retrieving book:", error.message);
     res.status(500).json({
       status: "error",
       message: error.message || "Internal Server Error",
     });
-    
   }
-})
+});
 
-// Delete the book by id 
-app.delete("/books/delete/:id", async(req,res)=>{
-  const {id } = req.params;
-  if(!id){
+// Delete the book by id
+app.delete("/books/delete/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
     return res.status(400).json({
       status: "fail",
       message: "id is required to delete the book",
     });
-    };
-    try {
-      const newBooks = await Books.findByIdAndDelete(id);
-    
-      if (newBooks.length === 0) {
-        return res.status(404).json({
-          status: "fail",
-          message: "No books found with the provided id",
-        });
-      }
-      res.status(200).json({
-        status:"success",
-        message :`Book with id ${id} deleted successfully`,
-        data:newBooks
-      })
-    } catch (error) {
-      res.status(500).json({
-        status: "error",
-        message: error.message || "Internal Server Error",
+  }
+  try {
+    const newBooks = await Books.findByIdAndDelete(id);
+
+    if (newBooks.length === 0) {
+      return res.status(404).json({
+        status: "fail",
+        message: "No books found with the provided id",
       });
     }
-  })
+    res.status(200).json({
+      status: "success",
+      message: `Book with id ${id} deleted successfully`,
+      data: newBooks,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message || "Internal Server Error",
+    });
+  }
+});
 
 // Update the book by id
-app.put("/books/update/:id",(async(req,res)=>{
-  const {id} = req.params;
+app.put("/books/update/:id", async (req, res) => {
+  const { id } = req.params;
   const { title, author, price } = req.body;
   if (!id || !title || !author || !price) {
     return res.status(400).json({
@@ -177,11 +176,11 @@ app.put("/books/update/:id",(async(req,res)=>{
     });
   }
   try {
-    const updatedBook = await Books.findByIdAndUpdate(
-      id,
-      { title, author, price },
-      { new: true }
-    );
+    const updatedBook = await Books.findByIdAndUpdate(id, {
+      title,
+      author,
+      price,
+    });
 
     if (!updatedBook) {
       return res.status(404).json({
@@ -202,7 +201,39 @@ app.put("/books/update/:id",(async(req,res)=>{
       message: error.message || "Internal Server Error",
     });
   }
-}))
+});
+
+app.post("/signup", async (req, res) => {
+  const { name, email, password, role } = req.body;
+  if (!name || !email || !password) {
+    return res.status(404).json({
+      status: "fail",
+      message: "name, email, password feild id required",
+    });
+  }
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(404).json({
+      status: "fail",
+      message: "email is already Regisdtered. So, Sign iN ",
+    });
+  }
+
+  const salt = bcrypt.genSaltSync(10);
+  const hashedPassword = bcrypt.hashSync(password, salt);
+
+  const newUser = new User({
+    name,
+    email,
+    password,
+    role,
+  });
+  await newUser.save();
+  res.status(200).json({
+    status: "success",
+    message: `${email} Signup Successfully`,
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
