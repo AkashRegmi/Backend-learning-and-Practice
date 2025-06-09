@@ -5,12 +5,13 @@ const connectDB = require("./config/database");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const cookie = require("cookie-parser")
+const cookie = require("cookie-parser");
+const multer = require("multer");
 
 const Loggerr = require("./middleWare/custome");
 const Books = require("./models/Books");
 const User = require("./models/User");
-const {auth,authAdmin}=require("./middleWare/authmiddleware")
+const { auth, authAdmin } = require("./middleWare/authmiddleware");
 const PORT = process.env.PORT || 1000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -56,7 +57,20 @@ connectDB();
 //   })
 // })
 
-app.post("/books",authAdmin, async (req, res) => {
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    const name = Date.now();
+    cb(null, `${name}_${file.originalname}`);
+  },
+});
+const upload = multer({
+  storage: storage,
+});
+
+app.post("/books", authAdmin, async (req, res) => {
   const { title, author, price } = req.body;
   if (!title || !author || !price) {
     return res.status(400).json({
@@ -169,7 +183,7 @@ app.delete("/books/delete/:id", async (req, res) => {
 });
 
 // Update the book by id
-app.put("/books/update/:id",authAdmin, async (req, res) => {
+app.put("/books/update/:id", authAdmin, async (req, res) => {
   const { id } = req.params;
   const { title, author, price } = req.body;
   if (!id || !title || !author || !price) {
@@ -241,14 +255,14 @@ app.post("/signup", async (req, res) => {
 // signin
 app.post("/signin", async (req, res) => {
   const { email, password } = req.body;
-  
-  if(!email || !password ){
+
+  if (!email || !password) {
     return res.status(400).json({
-      status:"fail",
-      message:"Email and Password Required"
-    })
-  };
-  const user = await User.findOne({email});
+      status: "fail",
+      message: "Email and Password Required",
+    });
+  }
+  const user = await User.findOne({ email });
   if (!user) {
     return res.status(404).json({
       status: "fail",
@@ -256,13 +270,13 @@ app.post("/signin", async (req, res) => {
     });
   }
   const validPassword = await bcrypt.compare(password, user.password);
-  if(!validPassword){
+  if (!validPassword) {
     return res.status(400).json({
-      status:"fail",
-      message:"Invalid Password"
-    })
+      status: "fail",
+      message: "Invalid Password",
+    });
   }
-  const token =  jwt.sign(
+  const token = jwt.sign(
     {
       user: user._id,
       role: user.role,
@@ -273,21 +287,30 @@ app.post("/signin", async (req, res) => {
     }
   );
   console.log(token);
-  res.cookie("token",token,{
-    httpOnly:true,
-    maxAge:3600000
+  res.cookie("token", token, {
+    httpOnly: true,
+    maxAge: 3600000,
   });
   res.status(200).json({
-    status:"Success",
-    message:"Login Successfully ",
-    token
-  })
+    status: "Success",
+    message: "Login Successfully ",
+    token,
+  });
 });
-
-
-
-
-
+app.post("/uploads", upload.single("image"), (req, res) => {
+    if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+  console.log(req.file);
+  try {
+    res.status(200).json({
+      message: "file Uploaded",
+      data:req.file
+    });
+  } catch (error) {
+    console.log(error.message);
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
