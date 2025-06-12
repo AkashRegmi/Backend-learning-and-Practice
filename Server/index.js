@@ -69,6 +69,29 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
 });
+//get the book for the one query 
+app.get("/books/search", async (req,res)=>{
+  console.log(req.query);
+  const {title} = req.query;
+  try {
+    let filter={};
+    if(title){
+      filter.title={$regex:title,$options:"i"}
+    };
+    const books = await Books.find(filter);
+    res.json(books)
+  } catch (error) {
+    
+    res.json(error.message)
+  }
+})
+
+//get the book for the double query
+app.get("/double", async (req,res)=>{
+   const {title,price}=req.query;
+   
+})
+
 
 app.post("/books", authAdmin, async (req, res) => {
   const { title, author, price } = req.body;
@@ -150,6 +173,9 @@ app.get("/books/:id", async (req, res) => {
     });
   }
 });
+
+
+
 
 // Delete the book by id
 app.delete("/books/delete/:id", async (req, res) => {
