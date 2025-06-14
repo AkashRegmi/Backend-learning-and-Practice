@@ -86,6 +86,26 @@ app.get("/books/search", async (req,res)=>{
   }
 })
 
+//get the pagination 
+app.get("/books/pagination",async(req,res)=>{
+  try {
+    const {page=1,limit=10}=req.query;
+  const intpage=Number(page);
+  const intlimit=Number(limit);
+  const skipProduct = (page-1) * limit;
+
+  const books = await Books.find().skip(skipProduct).limit(intlimit)
+  res.status(200).json({
+    status:"success",
+    message:"Book fetched",
+    books
+  })
+  } catch (error) {
+    console.log(error.message)
+  }
+  
+})
+
 //get the book for the double query
 app.get("/double", async (req,res)=>{
    const {title,price}=req.query;
